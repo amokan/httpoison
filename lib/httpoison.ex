@@ -1,6 +1,9 @@
 defmodule HTTPoison.Response do
-  defstruct status_code: nil, body: nil, headers: []
-  @type t :: %__MODULE__{status_code: integer, body: term, headers: list}
+  defstruct status_code: nil, body: nil, headers: [], location: nil
+  @type t :: %__MODULE__{status_code: integer, body: term, headers: list, location: binary | nil}
+
+  @spec location(Response.t) :: binary | nil
+  def location(response), do: response.location
 end
 
 defmodule HTTPoison.AsyncResponse do

@@ -430,10 +430,12 @@ defmodule HTTPoison.Base do
     hn_options = build_hackney_options(module, options)
 
     case do_request(method, request_url, request_headers, request_body, hn_options) do
-      {:ok, status_code, headers} -> response(process_status_code, process_headers, process_response_body, status_code, headers, "")
+      {:ok, status_code, headers} -> response(process_status_code, process_headers, process_response_body, status_code, headers, "", nil)
       {:ok, status_code, headers, client} ->
+        location = :hackney.location(client)
+
         case :hackney.body(client) do
-          {:ok, body} -> response(process_status_code, process_headers, process_response_body, status_code, headers, body)
+          {:ok, body} -> response(process_status_code, process_headers, process_response_body, status_code, headers, body, location)
           {:error, reason} -> {:error, %Error{reason: reason} }
         end
       {:ok, id} -> { :ok, %HTTPoison.AsyncResponse{ id: id } }
@@ -464,11 +466,12 @@ defmodule HTTPoison.Base do
                           request_body, hn_options)
   end
 
-  defp response(process_status_code, process_headers, process_response_body, status_code, headers, body) do
+  defp response(process_status_code, process_headers, process_response_body, status_code, headers, body, location) do
     {:ok, %Response {
       status_code: process_status_code.(status_code),
       headers: process_headers.(headers),
-      body: process_response_body.(body)
+      body: process_response_body.(body),
+      location: location
     } }
   end
 end
